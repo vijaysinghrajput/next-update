@@ -23,6 +23,10 @@ if (!empty($basePath) && strpos($uri, $basePath) === 0) {
     $uri = substr($uri, strlen($basePath));
 }
 
+// Additional production fixes
+$uri = trim($uri, '/');
+$uri = '/' . $uri;
+
 $uri = $uri ?: '/';
 
 // Your original routing logic
@@ -111,6 +115,7 @@ if (isset($routes[$uri])) {
 // Debug: Show what's happening
 if (config('app.debug', false)) {
     echo "<!-- Debug: URI='$uri', Looking for route -->";
+    error_log("Router Debug: URI='$uri', Method='$method', Script='{$_SERVER['SCRIPT_NAME']}', Request='{$_SERVER['REQUEST_URI']}'");
 }
 
 // Check dynamic routes
