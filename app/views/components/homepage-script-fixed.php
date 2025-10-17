@@ -229,29 +229,94 @@ $(document).ready(function() {
         const newsTitle = newsElement.dataset.newsTitle || '';
         const newsExcerpt = newsElement.dataset.newsExcerpt || '';
         const newsImage = newsElement.dataset.newsImage || '';
+        const newsUrl = `<?php echo base_url('news/'); ?>${newsId}`;
         const playStoreLink = 'https://play.google.com/store/apps/details?id=com.skyably.nextupdate';
         
-        const shareText = `📰 ${newsTitle}\n\n${newsExcerpt}\n\n📱 Download Next Update App:\n${playStoreLink}`;
+        const shareText = `📰 ${newsTitle}\n\n${newsExcerpt}\n\n🔗 Read full article: ${newsUrl}\n\n📱 Download Next Update App:\n${playStoreLink}`;
         
+        // Check if running in Android WebView
+        if (window.Android && window.Android.shareContent) {
+            window.Android.shareContent(newsTitle, shareText, newsUrl);
+            return;
+        }
+        
+        // Check if running in iOS WebView  
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.share) {
+            window.webkit.messageHandlers.share.postMessage({
+                title: newsTitle,
+                text: shareText,
+                url: newsUrl
+            });
+            return;
+        }
+        
+        // Use Web Share API if available
         if (navigator.share) {
             const shareData = {
                 title: newsTitle,
                 text: shareText,
-                url: playStoreLink
+                url: newsUrl
             };
             
-            navigator.share(shareData);
+            navigator.share(shareData).catch((error) => {
+                console.log('Error sharing:', error);
+                // Fallback to clipboard
+                fallbackShare(shareText);
+            });
         } else {
             // Fallback - copy to clipboard
+            fallbackShare(shareText);
+        }
+    };
+
+    // Fallback share function
+    function fallbackShare(shareText) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(shareText).then(() => {
-                if (window.MobileApp) {
+                if (window.MobileApp && window.MobileApp.showToast) {
                     window.MobileApp.showToast('News details copied to clipboard!');
+                } else if (window.Android && window.Android.showToast) {
+                    window.Android.showToast('News details copied to clipboard!');
                 } else {
                     alert('News details copied to clipboard!');
                 }
+            }).catch(() => {
+                // Manual fallback for older browsers
+                manualCopyToClipboard(shareText);
             });
+        } else {
+            manualCopyToClipboard(shareText);
         }
-    };
+    }
+
+    // Manual copy to clipboard for older browsers
+    function manualCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            if (window.Android && window.Android.showToast) {
+                window.Android.showToast('News details copied to clipboard!');
+            } else {
+                alert('News details copied to clipboard!');
+            }
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            if (window.Android && window.Android.showToast) {
+                window.Android.showToast('Failed to share. Please try again.');
+            } else {
+                alert('Failed to share. Please try again.');
+            }
+        }
+        
+        document.body.removeChild(textArea);
+    }
 
     // News view tracking and navigation
     window.trackNewsView = function(newsId, newsSlug) {

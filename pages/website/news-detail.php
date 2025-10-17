@@ -850,6 +850,28 @@ function shareNews() {
     
     const shareText = `📰 ${newsTitle}\n\n${newsDescription}\n\n📱 Download Next Update App:\n${playStoreLink}`;
     
+    // Try mobile app WebView integration first
+    try {
+        // Android WebView interface
+        if (window.Android && window.Android.shareContent) {
+            window.Android.shareContent(newsTitle, shareText, newsImage || '');
+            return;
+        }
+        
+        // iOS WebView interface
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.share) {
+            window.webkit.messageHandlers.share.postMessage({
+                title: newsTitle,
+                text: shareText,
+                image: newsImage || ''
+            });
+            return;
+        }
+    } catch (error) {
+        console.log('WebView sharing not available:', error);
+    }
+    
+    // Web Share API for mobile browsers
     if (navigator.share) {
         const shareData = {
             title: newsTitle,
@@ -857,19 +879,43 @@ function shareNews() {
             url: playStoreLink
         };
         
-        // Add image if available
-        if (newsImage) {
-            shareData.files = [newsImage];
-        }
-        
-        navigator.share(shareData);
-    } else {
-        // Fallback - copy to clipboard
-        navigator.clipboard.writeText(shareText).then(() => {
-            showToast('News details copied to clipboard!', 'success');
+        navigator.share(shareData).catch(error => {
+            console.log('Web Share failed:', error);
+            // Fallback to clipboard
+            fallbackToClipboard();
         });
+    } else {
+        fallbackToClipboard();
+    }
+    
+    function fallbackToClipboard() {
+        // Fallback - copy to clipboard
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareText).then(() => {
+                showToast('News details copied to clipboard!', 'success');
+            }).catch(() => {
+                // Manual fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shareText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('News details copied to clipboard!', 'success');
+            });
+        } else {
+            // Manual fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = shareText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('News details copied to clipboard!', 'success');
+        }
     }
 }
+
 
 function likeNews(newsId) {
     // Implement like functionality
