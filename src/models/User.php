@@ -37,6 +37,18 @@ class User {
         return $this->db->fetch("SELECT * FROM users WHERE referral_code = ?", [$code]);
     }
     
+    public function getByRememberToken($token) {
+        return $this->db->fetch("SELECT * FROM users WHERE remember_token = ? AND remember_token IS NOT NULL", [$token]);
+    }
+    
+    public function setRememberToken($id, $token) {
+        return $this->update($id, ['remember_token' => $token]);
+    }
+    
+    public function clearRememberToken($id) {
+        return $this->update($id, ['remember_token' => null]);
+    }
+    
     public function update($id, $data) {
         return $this->db->update('users', $data, 'id = ?', [$id]);
     }

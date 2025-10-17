@@ -128,7 +128,7 @@ class News {
         return $this->db->fetch("SELECT * FROM cities WHERE slug = ? AND is_active = 1", [$slug]);
     }
     
-    public function search($query, $limit = 20) {
+    public function search($query, $limit = 20, $offset = 0) {
         return $this->db->fetchAll("
             SELECT n.*, u.full_name as author_name, c.name as category_name, ci.name as city_name
             FROM news_articles n
@@ -137,8 +137,17 @@ class News {
             LEFT JOIN cities ci ON n.city_id = ci.id
             WHERE (n.title LIKE ? OR n.content LIKE ?) AND n.is_active = 1
             ORDER BY n.created_at DESC
-            LIMIT ?
-        ", ["%{$query}%", "%{$query}%", $limit]);
+            LIMIT ? OFFSET ?
+        ", ["%{$query}%", "%{$query}%", $limit, $offset]);
+    }
+    
+    public function getSearchCount($query) {
+        $result = $this->db->fetch("
+            SELECT COUNT(*) as count
+            FROM news_articles n
+            WHERE (n.title LIKE ? OR n.content LIKE ?) AND n.is_active = 1
+        ", ["%{$query}%", "%{$query}%"]);
+        return $result['count'] ?? 0;
     }
     
     public function getByUser($userId, $limit = 20) {

@@ -12,6 +12,8 @@ Router::get('/contact', 'website/contact');
 Router::get('/privacy', 'website/privacy');
 Router::get('/terms', 'website/terms');
 Router::get('/ads-demo', 'website/ads-demo');
+Router::get('/rss-news', 'website/rss-news');
+Router::get('/news', 'website/news');
 
 // Authentication
 Router::get('/login', 'website/login');
@@ -84,6 +86,7 @@ Router::get('/uploads/{path}', 'api/image');
 
 // API routes
 Router::get('/api/news', 'api/news');
+Router::get('/api/rss-news', 'api/rss-news');
 Router::get('/api/categories', 'api/categories');
 Router::get('/api/cities', 'api/cities');
 Router::post('/api/upload', 'api/upload');

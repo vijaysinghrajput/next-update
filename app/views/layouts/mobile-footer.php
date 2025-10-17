@@ -8,88 +8,85 @@
         
         <!-- Mobile Navigation -->
         <nav class="mobile-nav mobile-safe-bottom">
-            <div class="nav-items">
+            <!-- Bottom Tab Navigation -->
+            <div class="bottom-tabs">
+                <!-- Home Tab - Always visible -->
+                <a href="<?php echo base_url(); ?>" class="tab-item <?php echo (basename($_SERVER['REQUEST_URI']) == '' || basename($_SERVER['REQUEST_URI']) == 'index.php') ? 'active' : ''; ?>">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                
+                <!-- RSS News Tab - Always visible -->
+                <a href="<?php echo base_url('rss-news'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/rss-news') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-rss"></i>
+                    <span>RSS News</span>
+                </a>
+                
                 <?php if (session('user_id')): ?>
-                    <?php if (session('is_admin')): ?>
-                        <!-- Admin user navigation -->
-                        
-                        <!-- Home -->
-                        <a href="<?php echo base_url('/'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/') !== false && $_SERVER['REQUEST_URI'] === '/') ? 'active' : ''; ?>">
-                            <i class="fas fa-home"></i>
-                            <span>Home</span>
-                        </a>
-                        
-                        <!-- Admin Dashboard -->
-                        <a href="<?php echo base_url('/admin/dashboard'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/admin/dashboard') !== false) ? 'active' : ''; ?>">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Admin</span>
-                        </a>
-                        
-                        <!-- Users -->
-                        <a href="<?php echo base_url('/admin/users'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/admin/users') !== false) ? 'active' : ''; ?>">
-                            <i class="fas fa-users"></i>
-                            <span>Users</span>
-                        </a>
-                        
-                        <!-- News -->
-                        <a href="<?php echo base_url('/admin/news'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/admin/news') !== false) ? 'active' : ''; ?>">
-                            <i class="fas fa-newspaper"></i>
-                            <span>News</span>
-                        </a>
-                        
-                        <!-- Ads -->
-                        <a href="<?php echo base_url('/admin/ads'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/admin/ads') !== false) ? 'active' : ''; ?>">
-                            <i class="fas fa-bullhorn"></i>
-                            <span>Ads</span>
-                        </a>
-                        
-                    <?php else: ?>
-                        <!-- Regular user navigation -->
-                        
-                        <!-- Home -->
-                        <a href="<?php echo base_url('/'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/') !== false && $_SERVER['REQUEST_URI'] === '/') ? 'active' : ''; ?>">
-                            <i class="fas fa-home"></i>
-                            <span>Home</span>
-                        </a>
-                        
-                        
-                        <!-- Dashboard -->
-                        <a href="<?php echo base_url('/dashboard'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false) ? 'active' : ''; ?>">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                        
-                        <!-- Post Ads -->
-                        <a href="<?php echo base_url('/post-ad'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/post-ad') !== false) ? 'active' : ''; ?>">
-                            <i class="fas fa-bullhorn"></i>
-                            <span>Post Ads</span>
-                        </a>
-                    <?php endif; ?>
-                    
-                <?php else: ?>
-                    <!-- Guest user navigation -->
-                    
-                    <!-- Home -->
-                    <a href="<?php echo base_url('/'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/') !== false && $_SERVER['REQUEST_URI'] === '/') ? 'active' : ''; ?>">
-                        <i class="fas fa-home"></i>
-                        <span>Home</span>
+                    <!-- For logged in users: News and More tabs -->
+                    <a href="<?php echo base_url('news'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/news') !== false && strpos($_SERVER['REQUEST_URI'], '/rss-news') === false ? 'active' : ''; ?>">
+                        <i class="fas fa-newspaper"></i>
+                        <span>News</span>
                     </a>
-                    
-                    
-                    <!-- Login -->
-                    <a href="<?php echo base_url('/login'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/login') !== false) ? 'active' : ''; ?>">
+                    <a href="#" class="tab-item" id="more-tab" onclick="toggleMoreMenu(event)">
+                        <i class="fas fa-ellipsis-h"></i>
+                        <span>More</span>
+                    </a>
+                <?php else: ?>
+                    <!-- For non-logged in users: Login and Sign Up tabs -->
+                    <a href="<?php echo base_url('login'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/login') !== false ? 'active' : ''; ?>">
                         <i class="fas fa-sign-in-alt"></i>
                         <span>Login</span>
                     </a>
-                    
-                    <!-- Signup -->
-                    <a href="<?php echo base_url('/signup'); ?>" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/signup') !== false) ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('signup'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/signup') !== false ? 'active' : ''; ?>">
                         <i class="fas fa-user-plus"></i>
-                        <span>Signup</span>
+                        <span>Sign Up</span>
                     </a>
-                    
                 <?php endif; ?>
             </div>
+
+            <!-- More Menu Overlay - Only for logged in users -->
+            <?php if (session('user_id')): ?>
+            <div class="more-menu-overlay" id="more-menu-overlay" onclick="hideMoreMenu()"></div>
+            
+            <!-- More Menu -->
+            <div class="more-menu" id="more-menu">
+                <div class="more-menu-header">
+                    <h5>Menu</h5>
+                    <button onclick="hideMoreMenu()" class="close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="more-menu-content">
+                    <a href="<?php echo session('is_admin') ? base_url('admin') : base_url('dashboard'); ?>" class="more-menu-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="<?php echo base_url('my-news'); ?>" class="more-menu-item">
+                        <i class="fas fa-edit"></i>
+                        <span>My News</span>
+                        <span class="badge">2</span>
+                    </a>
+                    <a href="<?php echo base_url('profile'); ?>" class="more-menu-item">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="<?php echo base_url('logout'); ?>" class="more-menu-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                    <div class="more-menu-divider"></div>
+                    <a href="<?php echo base_url('about'); ?>" class="more-menu-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About</span>
+                    </a>
+                    <a href="<?php echo base_url('contact'); ?>" class="more-menu-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>Contact</span>
+                    </a>
+                </div>
+            </div>
+            <?php endif; ?>
         </nav>
         
         <!-- Floating Action Button -->
@@ -662,6 +659,363 @@
                 box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
             }
         }
+
+        /* Enhanced Mobile Footer Styles */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid #e9ecef;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 0;
+            width: 100%;
+        }
+
+        .bottom-tabs {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 65px;
+            background: #ffffff;
+            position: relative;
+            padding: 0 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #8e8e93;
+            transition: all 0.2s ease;
+            padding: 8px 6px;
+            border-radius: 12px;
+            flex: 1;
+            max-width: 80px;
+            position: relative;
+        }
+
+        .tab-item:hover {
+            text-decoration: none;
+            color: #007aff;
+        }
+
+        .tab-item.active {
+            color: #007aff;
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .tab-item i {
+            font-size: 20px;
+            margin-bottom: 2px;
+            transition: transform 0.2s ease;
+        }
+
+        .tab-item.active i {
+            transform: scale(1.1);
+        }
+
+        .tab-item span {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1;
+            margin-top: 1px;
+            white-space: nowrap;
+        }
+
+        /* Add safe area for iPhone */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .mobile-nav {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+
+        /* Active indicator animation */
+        .tab-item.active::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #007aff;
+            border-radius: 50%;
+            animation: pulseIndicator 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseIndicator {
+            0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.6; transform: translateX(-50%) scale(1.2); }
+        }
+
+        /* More Menu Enhanced Styles */
+
+        /* More Menu Enhanced Styles */
+        .more-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(4px);
+        }
+
+        .more-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .more-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .more-menu.active {
+            transform: translateY(0);
+        }
+
+        .more-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #f1f1f1;
+            background: #ffffff;
+            border-radius: 20px 20px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .more-menu-header h5 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .close-btn {
+            background: #f2f2f7;
+            border: none;
+            font-size: 16px;
+            color: #8e8e93;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #e5e5ea;
+            color: #1a1a1a;
+        }
+
+        .more-menu-content {
+            padding: 8px 0 calc(env(safe-area-inset-bottom) + 20px);
+        }
+
+        .more-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            text-decoration: none;
+            color: #1a1a1a;
+            transition: all 0.2s ease;
+            position: relative;
+            background: #ffffff;
+        }
+
+        .more-menu-item:hover {
+            background: #f2f2f7;
+            text-decoration: none;
+            color: #007aff;
+        }
+
+        .more-menu-item:active {
+            background: #e5e5ea;
+            transform: scale(0.98);
+        }
+
+        .more-menu-item i {
+            width: 28px;
+            height: 28px;
+            margin-right: 16px;
+            font-size: 16px;
+            color: #007aff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .more-menu-item span {
+            font-weight: 500;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .more-menu-item .badge {
+            background: #ff3b30;
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .more-menu-divider {
+            height: 1px;
+            background: #f1f1f1;
+            margin: 8px 24px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 375px) {
+            .bottom-tabs {
+                padding: 0 5px;
+            }
+            
+            .tab-item {
+                padding: 8px 3px;
+                max-width: 70px;
+            }
+            
+            .tab-item span {
+                font-size: 9px;
+            }
+            
+            .tab-item i {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .bottom-tabs {
+                padding: 0 2px;
+            }
+            
+            .tab-item {
+                padding: 8px 2px;
+                max-width: 65px;
+            }
+            
+            .tab-item span {
+                font-size: 8px;
+            }
+            
+            .tab-item i {
+                font-size: 16px;
+            }
+        }
+
+        @media (min-width: 376px) and (max-width: 414px) {
+            .bottom-tabs {
+                padding: 0 15px;
+            }
+            
+            .tab-item {
+                padding: 8px 8px;
+                max-width: 85px;
+            }
+        }
+
+        @media (min-width: 415px) {
+            .bottom-tabs {
+                padding: 0 20px;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            
+            .tab-item {
+                max-width: 90px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .mobile-nav {
+                background: #1c1c1e;
+                border-top-color: #38383a;
+            }
+            
+            .bottom-tabs {
+                background: #1c1c1e;
+            }
+            
+            .tab-item {
+                color: #8e8e93;
+            }
+            
+            .tab-item.active {
+                color: #0a84ff;
+                background: rgba(10, 132, 255, 0.15);
+            }
+            
+            .more-menu {
+                background: #1c1c1e;
+            }
+            
+            .more-menu-header {
+                background: #1c1c1e;
+                border-bottom-color: #38383a;
+            }
+            
+            .more-menu-header h5 {
+                color: #ffffff;
+            }
+            
+            .more-menu-item {
+                color: #ffffff;
+                background: #1c1c1e;
+            }
+            
+            .more-menu-item:hover {
+                background: #2c2c2e;
+                color: #0a84ff;
+            }
+        }
+
+        /* Add body padding for fixed footer */
+        body {
+            padding-bottom: 75px;
+        }
+
+        .mobile-app-container {
+            padding-bottom: 10px;
+        }
     </style>
     
     <!-- Mobile App JavaScript -->
@@ -768,6 +1122,39 @@
         observer.observe(document.body, {
             childList: true,
             subtree: true
+        });
+
+        // More Menu Functions
+        window.toggleMoreMenu = function(event) {
+            event.preventDefault();
+            const overlay = document.getElementById('more-menu-overlay');
+            const menu = document.getElementById('more-menu');
+            
+            if (overlay && menu) {
+                overlay.classList.add('active');
+                menu.classList.add('active');
+                
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        window.hideMoreMenu = function() {
+            const overlay = document.getElementById('more-menu-overlay');
+            const menu = document.getElementById('more-menu');
+            
+            if (overlay && menu) {
+                overlay.classList.remove('active');
+                menu.classList.remove('active');
+                
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
+        };
+
+        // Close menu when back button is pressed (mobile)
+        window.addEventListener('popstate', function() {
+            hideMoreMenu();
         });
     </script>
 </body>

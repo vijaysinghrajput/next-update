@@ -14,7 +14,13 @@ require_once SRC_PATH . '/services/Config.php';
 require_once SRC_PATH . '/services/Database.php';
 require_once SRC_PATH . '/services/Session.php';
 require_once SRC_PATH . '/services/Router.php';
+require_once SRC_PATH . '/services/RSSService.php';
 require_once SRC_PATH . '/helpers/ConfigHelper.php';
+
+// Import services
+use App\Services\Config;
+use App\Services\Database;
+use App\Services\Session;
 
 // Load models
 require_once SRC_PATH . '/models/User.php';
@@ -24,27 +30,61 @@ require_once SRC_PATH . '/models/Ad.php';
 // Load configuration
 $config = require CONFIG_PATH . '/app.php';
 
-// Initialize services
-use App\Services\Database;
-use App\Services\Config;
-use App\Services\Session;
-
 // Set global config
 Config::setConfig($config);
 
-// Start session
+// Configure session settings for better persistence
 if (session_status() === PHP_SESSION_NONE) {
     // Set session save path
     $sessionPath = __DIR__ . '/storage/sessions';
     if (!is_dir($sessionPath)) {
         mkdir($sessionPath, 0755, true);
     }
-    // Only set session save path if not already set
-    if (session_status() === PHP_SESSION_NONE) {
-        session_save_path($sessionPath);
-    }
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+    
+    // Configure session for longer persistence (30 days)
+    ini_set('session.gc_maxlifetime', 30 * 24 * 60 * 60); // 30 days
+    ini_set('session.cookie_lifetime', 30 * 24 * 60 * 60); // 30 days
+    ini_set('session.cookie_httponly', 1); // Security
+    ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 1 : 0);
+    ini_set('session.use_strict_mode', 1); // Security
+    ini_set('session.cookie_samesite', 'Lax'); // Cross-site compatibility
+    
+    // Set session cookie parameters
+    session_set_cookie_params([
+        'lifetime' => 30 * 24 * 60 * 60, // 30 days
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    
+    // Set session save path
+    session_save_path($sessionPath);
+    
+    // Configure session for longer lifetime (30 days)
+    ini_set('session.gc_maxlifetime', 2592000); // 30 days
+    ini_set('session.cookie_lifetime', 2592000); // 30 days
+    session_set_cookie_params([
+        'lifetime' => 2592000, // 30 days
+        'path' => '/',
+        'domain' => '',
+        'secure' => false, // Set to true if using HTTPS
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    
+    // Start session
+    session_start();
+    
+    // Try to restore session from remember token if user is not logged in
+    if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_token'])) {
+        try {
+            $session = new Session();
+            $session->restoreFromRememberToken($_COOKIE['remember_token']);
+        } catch (Exception $e) {
+            // Ignore errors during session restoration
+        }
     }
 }
 

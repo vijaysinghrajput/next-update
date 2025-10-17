@@ -385,16 +385,26 @@ class MobileApp {
     handleShare(shareData) {
         this.hapticFeedback('light');
         
+        // Always use Play Store link instead of current URL
+        const playStoreLink = 'https://play.google.com/store/apps/details?id=com.skyably.nextupdate';
+        
+        // Modify shareData to use Play Store link
+        const modifiedShareData = {
+            ...shareData,
+            url: playStoreLink,
+            text: shareData.text ? `${shareData.text}\n\n📱 Download Next Update App:\n${playStoreLink}` : `📱 Download Next Update App:\n${playStoreLink}`
+        };
+        
         if (navigator.share && this.isWebView) {
             // Use native share
-            navigator.share(shareData).catch(console.error);
+            navigator.share(modifiedShareData).catch(console.error);
         } else if (this.isWebView) {
             // Use native bridge
-            this.nativeShare(shareData);
+            this.nativeShare(modifiedShareData);
         } else {
             // Fallback to clipboard
-            this.copyToClipboard(shareData.url);
-            this.showToast('Link copied to clipboard');
+            this.copyToClipboard(modifiedShareData.text || modifiedShareData.url);
+            this.showToast('App link copied to clipboard');
         }
     }
 

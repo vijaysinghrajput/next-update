@@ -135,7 +135,14 @@ $(document).ready(function() {
     // Create news item HTML
     function createNewsItemHtml(news) {
         return `
-            <div class="latest-card" data-category="${news.category_id}" data-is-bansgaonsandesh="${news.is_bansgaonsandesh}" onclick="trackNewsView(${news.id})">
+            <div class="latest-card" 
+                 data-category="${news.category_id}" 
+                 data-is-bansgaonsandesh="${news.is_bansgaonsandesh}"
+                 data-news-id="${news.id}"
+                 data-news-title="${news.title}"
+                 data-news-excerpt="${news.excerpt || news.content.substring(0, 120) + '...'}"
+                 data-news-image="${news.featured_image || ''}"
+                 onclick="trackNewsView(${news.id}, '${news.slug || ''}')">
                 ${news.featured_image ? `
                     <div class="latest-image-container">
                         <img src="${news.featured_image}" alt="${news.title}" class="latest-image">
@@ -162,6 +169,14 @@ $(document).ready(function() {
                         <div class="meta-time">${new Date(news.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
                     </div>
                 </div>
+                
+                <!-- Share Button -->
+                <div class="news-share-actions">
+                    <button class="share-news-btn" onclick="event.stopPropagation(); shareNewsFromCard(${news.id})">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+                
             </div>
         `;
     }
@@ -206,14 +221,54 @@ $(document).ready(function() {
         });
     };
 
-    // News view tracking
-    window.trackNewsView = function(newsId) {
+    // Share news from card
+    window.shareNewsFromCard = function(newsId) {
+        const newsElement = document.querySelector(`[data-news-id="${newsId}"]`);
+        if (!newsElement) return;
+        
+        const newsTitle = newsElement.dataset.newsTitle || '';
+        const newsExcerpt = newsElement.dataset.newsExcerpt || '';
+        const newsImage = newsElement.dataset.newsImage || '';
+        const playStoreLink = 'https://play.google.com/store/apps/details?id=com.skyably.nextupdate';
+        
+        const shareText = `📰 ${newsTitle}\n\n${newsExcerpt}\n\n📱 Download Next Update App:\n${playStoreLink}`;
+        
+        if (navigator.share) {
+            const shareData = {
+                title: newsTitle,
+                text: shareText,
+                url: playStoreLink
+            };
+            
+            navigator.share(shareData);
+        } else {
+            // Fallback - copy to clipboard
+            navigator.clipboard.writeText(shareText).then(() => {
+                if (window.MobileApp) {
+                    window.MobileApp.showToast('News details copied to clipboard!');
+                } else {
+                    alert('News details copied to clipboard!');
+                }
+            });
+        }
+    };
+
+    // News view tracking and navigation
+    window.trackNewsView = function(newsId, newsSlug) {
+        // Track the view
         $.ajax({
             url: '<?php echo base_url('api/track-news-view'); ?>',
             method: 'POST',
             data: { news_id: newsId },
             dataType: 'json'
         });
+        
+        // Navigate to news detail page
+        const newsUrl = newsSlug ? 
+            '<?php echo base_url('news/'); ?>' + newsSlug : 
+            '<?php echo base_url('news/'); ?>' + newsId;
+        
+        window.location.href = newsUrl;
     };
 
     // Infinite scroll

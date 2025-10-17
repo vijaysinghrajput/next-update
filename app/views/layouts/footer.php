@@ -1,28 +1,29 @@
     <!-- Bottom Tab Navigation -->
     <div class="bottom-tabs">
+        <!-- Home Tab - Always visible -->
         <a href="<?php echo base_url(); ?>" class="tab-item <?php echo (basename($_SERVER['REQUEST_URI']) == '' || basename($_SERVER['REQUEST_URI']) == 'index.php') ? 'active' : ''; ?>">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="<?php echo base_url('about'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/about') !== false ? 'active' : ''; ?>">
-            <i class="fas fa-info-circle"></i>
-            <span>About</span>
+        
+        <!-- RSS News Tab - Always visible -->
+        <a href="<?php echo base_url('rss-news'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/rss-news') !== false ? 'active' : ''; ?>">
+            <i class="fas fa-rss"></i>
+            <span>RSS News</span>
         </a>
+        
         <?php if (session('user_id')): ?>
-            <a href="<?php echo session('is_admin') ? base_url('admin') : base_url('dashboard'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false || strpos($_SERVER['REQUEST_URI'], '/admin') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="<?php echo base_url('my-news'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/my-news') !== false ? 'active' : ''; ?>">
+            <!-- For logged in users: News and More tabs -->
+            <a href="<?php echo base_url('news'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/news') !== false && strpos($_SERVER['REQUEST_URI'], '/rss-news') === false ? 'active' : ''; ?>">
                 <i class="fas fa-newspaper"></i>
-                <span>My News</span>
-                <span class="badge">2</span>
+                <span>News</span>
             </a>
-            <a href="<?php echo base_url('profile'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/profile') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-user"></i>
-                <span>Profile</span>
+            <a href="#" class="tab-item" id="more-tab" onclick="toggleMoreMenu(event)">
+                <i class="fas fa-ellipsis-h"></i>
+                <span>More</span>
             </a>
         <?php else: ?>
+            <!-- For non-logged in users: Login and Sign Up tabs -->
             <a href="<?php echo base_url('login'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/login') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-sign-in-alt"></i>
                 <span>Login</span>
@@ -31,11 +32,218 @@
                 <i class="fas fa-user-plus"></i>
                 <span>Sign Up</span>
             </a>
-            <a href="<?php echo base_url('contact'); ?>" class="tab-item <?php echo strpos($_SERVER['REQUEST_URI'], '/contact') !== false ? 'active' : ''; ?>">
+        <?php endif; ?>
+    </div>
+
+    <!-- More Menu Overlay - Only for logged in users -->
+    <?php if (session('user_id')): ?>
+    <div class="more-menu-overlay" id="more-menu-overlay" onclick="hideMoreMenu()"></div>
+    
+    <!-- More Menu -->
+    <div class="more-menu" id="more-menu">
+        <div class="more-menu-header">
+            <h5>Menu</h5>
+            <button onclick="hideMoreMenu()" class="close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="more-menu-content">
+            <a href="<?php echo session('is_admin') ? base_url('admin') : base_url('dashboard'); ?>" class="more-menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="<?php echo base_url('my-news'); ?>" class="more-menu-item">
+                <i class="fas fa-edit"></i>
+                <span>My News</span>
+                <span class="badge">2</span>
+            </a>
+            <a href="<?php echo base_url('profile'); ?>" class="more-menu-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a href="<?php echo base_url('logout'); ?>" class="more-menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+            <div class="more-menu-divider"></div>
+            <a href="<?php echo base_url('about'); ?>" class="more-menu-item">
+                <i class="fas fa-info-circle"></i>
+                <span>About</span>
+            </a>
+            <a href="<?php echo base_url('contact'); ?>" class="more-menu-item">
                 <i class="fas fa-envelope"></i>
                 <span>Contact</span>
             </a>
-        <?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <style>
+    .more-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .more-menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .more-menu {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 25px 25px 0 0;
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
+        z-index: 1000;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .more-menu.active {
+        transform: translateY(0);
+    }
+
+    .more-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .more-menu-header h5 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: #666;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .more-menu-content {
+        padding: 1rem 0 2rem;
+    }
+
+    .more-menu-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .more-menu-item:hover {
+        background: #f8f9fa;
+        text-decoration: none;
+        color: #007bff;
+    }
+
+    .more-menu-item i {
+        width: 24px;
+        margin-right: 1rem;
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .more-menu-item:hover i {
+        color: #007bff;
+    }
+
+    .more-menu-item span {
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .more-menu-item .badge {
+        background: #dc3545;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    .more-menu-divider {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 0.5rem 1.5rem;
+    }
+
+    /* Ensure bottom tabs don't get too crowded */
+    .bottom-tabs {
+        display: flex;
+        justify-content: space-around;
+        max-width: 100%;
+    }
+
+    .tab-item {
+        flex: 1;
+        max-width: 80px;
+    }
+
+    .tab-item span {
+        font-size: 0.75rem;
+    }
+    </style>
+
+    <script>
+    function toggleMoreMenu(event) {
+        event.preventDefault();
+        const overlay = document.getElementById('more-menu-overlay');
+        const menu = document.getElementById('more-menu');
+        
+        overlay.classList.add('active');
+        menu.classList.add('active');
+        
+        // Prevent body scroll when menu is open
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideMoreMenu() {
+        const overlay = document.getElementById('more-menu-overlay');
+        const menu = document.getElementById('more-menu');
+        
+        overlay.classList.remove('active');
+        menu.classList.remove('active');
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+    }
+
+    // Close menu when back button is pressed (mobile)
+    window.addEventListener('popstate', function() {
+        hideMoreMenu();
+    });
+    </script>
     </div>
 
     <!-- Footer -->

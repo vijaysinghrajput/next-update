@@ -1798,6 +1798,7 @@
     cursor: pointer;
     border: 1px solid rgba(0,0,0,0.05);
     margin-bottom: 15px;
+    position: relative;
 }
 
 .featured-card:hover {
@@ -1959,6 +1960,7 @@
     cursor: pointer;
     border: 1px solid rgba(0,0,0,0.05);
     margin-bottom: 15px;
+    position: relative;
 }
 
 .latest-card:hover {
@@ -2462,5 +2464,80 @@ img[src*="file://"] {
     
     .loading-subtitle {
         font-size: 0.85rem;
+    }
+}
+
+/* ===== NEWS SHARE ACTIONS ===== */
+.news-share-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    opacity: 0.9;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+.featured-card:hover .news-share-actions,
+.latest-card:hover .news-share-actions {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.share-news-btn {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #667eea;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.share-news-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+}
+
+.share-news-btn:active {
+    transform: scale(0.9);
+}
+
+/* Mobile touch improvements */
+@media (max-width: 768px) {
+    .news-share-actions {
+        opacity: 1;
+        top: 6px;
+        right: 6px;
+    }
+    
+    .share-news-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+}
+
+/* For touch devices, always show share buttons */
+@media (hover: none) and (pointer: coarse) {
+    .news-share-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .share-news-btn {
+        background: rgba(255, 255, 255, 0.95);
     }
 }

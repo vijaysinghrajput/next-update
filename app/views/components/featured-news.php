@@ -13,8 +13,12 @@ if (empty($featured_news)) return;
         <?php foreach ($featured_news as $index => $news): ?>
             <div class="featured-card" 
                  data-category="<?php echo $news['category_id']; ?>" 
-                 data-is-bansgaonsandesh="<?php echo $news['is_bansgaonsandesh']; ?>" 
-                 onclick="trackNewsView(<?php echo $news['id']; ?>)">
+                 data-is-bansgaonsandesh="<?php echo $news['is_bansgaonsandesh']; ?>"
+                 data-news-id="<?php echo $news['id']; ?>"
+                 data-news-title="<?php echo htmlspecialchars($news['title']); ?>"
+                 data-news-excerpt="<?php echo htmlspecialchars($news['excerpt'] ?? substr(strip_tags($news['content']), 0, 150) . '...'); ?>"
+                 data-news-image="<?php echo $news['featured_image'] ? base_url('public/' . $news['featured_image']) : ''; ?>"
+                 onclick="trackNewsView(<?php echo $news['id']; ?>, '<?php echo $news['slug'] ?? ''; ?>')">
                 
                 <?php if ($news['featured_image']): ?>
                     <div class="featured-image-container">
@@ -55,6 +59,13 @@ if (empty($featured_news)) return;
                             <?php echo date('M j', strtotime($news['created_at'])); ?>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Share Button -->
+                <div class="news-share-actions">
+                    <button class="share-news-btn" onclick="event.stopPropagation(); shareNewsFromCard(<?php echo $news['id']; ?>)">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
                 </div>
                 
             </div>

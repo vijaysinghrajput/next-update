@@ -57,6 +57,7 @@ $routes = [
     '/transactions' => 'pages/user/transactions.php',
     '/notifications' => 'pages/user/notifications.php',
     '/news' => 'pages/website/news.php',
+    '/rss-news' => 'pages/website/rss-news.php',
     '/search' => 'pages/website/search.php',
     '/forgot-password' => 'pages/website/forgot-password.php',
     '/logout' => 'pages/user/logout.php',
@@ -85,6 +86,8 @@ if (preg_match('/^\/post-news\/(\d+)\/delete$/', $uri, $matches)) {
 // API routes
 $apiRoutes = [
     '/api/news' => 'pages/api/news.php',
+    '/api/rss-news' => 'pages/api/rss-news.php',
+    '/api/test-simple' => 'pages/api/test-simple.php',
     '/api/ads' => 'pages/api/ads.php',
     '/api/track-ad' => 'pages/api/track-ad.php',
     '/api/track-news-view' => 'pages/api/track-news-view.php',
